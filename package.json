@@ -1,0 +1,41 @@
+{
+  "name": "facebook-comments-manager",
+  "version": "1.0.0",
+  "description": "موقع ويب لإدارة التعليقات والردود على الفيسبوك",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:https": "node server-https.js",
+    "dev": "nodemon server.js",
+    "dev:https": "nodemon server-https.js",
+    "build": "webpack --mode production",
+    "build:dev": "webpack --mode development"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "axios": "^1.6.0",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "multer": "^1.4.5-lts.1",
+    "socket.io": "^4.7.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.4",
+    "css-loader": "^6.8.1",
+    "style-loader": "^3.3.3",
+    "html-webpack-plugin": "^5.5.3"
+  },
+  "keywords": [
+    "facebook",
+    "comments",
+    "manager",
+    "web",
+    "api"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

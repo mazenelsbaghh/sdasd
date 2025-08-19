@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استقبال الأذن - Facebook Comments Manager</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .callback-container {
+            max-width: 500px;
+            margin: 100px auto;
+            padding: 40px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #4caf50;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+        }
+
+        .callback-title {
+            font-size: 24px;
+            color: #1c1e21;
+            margin-bottom: 10px;
+        }
+
+        .callback-subtitle {
+            color: #65676b;
+            margin-bottom: 30px;
+        }
+
+        .token-display {
+            background: #f0f2f5;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: right;
+            margin: 20px 0;
+            word-break: break-all;
+        }
+
+        .copy-btn {
+            background: #1877f2;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+
+        .copy-btn:hover {
+            background: #166fe5;
+        }
+
+        .continue-btn {
+            background: #4caf50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .continue-btn:hover {
+            background: #45a049;
+        }
+
+        .error-message {
+            color: #f44336;
+            background: #ffebee;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="callback-container">
+        <div id="successContent" style="display: none;">
+            <div class="success-icon">✓</div>
+            <h1 class="callback-title">تم الحصول على الأذن بنجاح!</h1>
+            <p class="callback-subtitle">يمكنك الآن استخدام التطبيق مع البيانات الحقيقية</p>
+
+            <div class="token-display">
+                <strong>رمز الوصول:</strong><br>
+                <span id="accessToken"></span>
+            </div>
+
+            <button class="copy-btn" onclick="copyToken()">نسخ الرمز</button>
+            <button class="copy-btn" onclick="downloadToken()">تحميل الرمز</button>
+
+            <button class="continue-btn" onclick="goToApp()">الذهاب إلى التطبيق</button>
+        </div>
+
+        <div id="errorContent" style="display: none;">
+            <div class="error-message">
+                <h3>حدث خطأ</h3>
+                <p id="errorText"></p>
+            </div>
+            <button class="continue-btn" onclick="goToLogin()">العودة لتسجيل الدخول</button>
+        </div>
+
+        <div id="loadingContent">
+            <div class="success-icon">⏳</div>
+            <h1 class="callback-title">جاري معالجة الأذن...</h1>
+            <p class="callback-subtitle">يرجى الانتظار</p>
+        </div>
+    </div>
+
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+        const errorReason = urlParams.get('error_reason');
+        const errorDescription = urlParams.get('error_description');
+
+        if (error) {
+            showError(errorReason || error, errorDescription || 'حدث خطأ أثناء الحصول على الأذن');
+        } else if (code) {
+            exchangeCodeForToken(code);
+        } else {
+            showError('خطأ', 'لم يتم استلام رمز الأذن من Facebook');
+        }
+
+        function exchangeCodeForToken(code) {
+            // Send code to backend to exchange for access token
+            fetch('/api/auth/exchange', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code: code })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.access_token) {
+                        showSuccess(data.access_token);
+                    } else {
+                        showError('خطأ', data.error || 'فشل في الحصول على رمز الوصول');
+                    }
+                })
+                .catch(err => {
+                    showError('خطأ في الاتصال', 'فشل في الاتصال بالخادم');
+                });
+        }
+
+        function showSuccess(token) {
+            document.getElementById('loadingContent').style.display = 'none';
+            document.getElementById('successContent').style.display = 'block';
+            document.getElementById('accessToken').textContent = token;
+        }
+
+        function showError(title, message) {
+            document.getElementById('loadingContent').style.display = 'none';
+            document.getElementById('errorContent').style.display = 'block';
+            document.getElementById('errorText').innerHTML = `<strong>${title}:</strong> ${message}`;
+        }
+
+        function copyToken() {
+            const token = document.getElementById('accessToken').textContent;
+            navigator.clipboard.writeText(token).then(() => {
+                alert('تم نسخ رمز الوصول!');
+            });
+        }
+
+        function downloadToken() {
+            const token = document.getElementById('accessToken').textContent;
+            const blob = new Blob([token], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'facebook_access_token.txt';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function goToApp() {
+            window.location.href = '/';
+        }
+
+        function goToLogin() {
+            window.location.href = '/login.html';
+        }
+    </script>
+</body>
+
+</html>

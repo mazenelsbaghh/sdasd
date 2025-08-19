@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مدير تعليقات الفيسبوك</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1 class="logo">📱 Facebook Comments Manager</h1>
+                <div id="authStatus" class="auth-status"></div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="dashboard-header">
+                    <h2>لوحة التحكم</h2>
+                    <div class="page-selector">
+                        <label for="pageSelect">اختر الصفحة:</label>
+                        <input type="text" id="pageSelect" placeholder="أدخل معرف صفحة الفيسبوك">
+                        <button id="loadPageBtn" class="btn btn-primary">
+                            <i class="fas fa-search"></i>
+                            تحميل الصفحة
+                        </button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="totalComments">0</h3>
+                            <p>إجمالي التعليقات</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon pending">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="pendingComments">0</h3>
+                            <p>تعليقات في الانتظار</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon replied">
+                            <i class="fas fa-reply"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="repliedComments">0</h3>
+                            <p>تعليقات تم الرد عليها</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-percentage"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="responseRate">0%</h3>
+                            <p>معدل الاستجابة</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="recent-activity">
+                    <h3>النشاط الأخير</h3>
+                    <div id="recentComments" class="activity-list">
+                        <!-- Recent comments will be loaded here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Tab -->
+            <div id="comments" class="tab-content">
+                <div class="comments-header">
+                    <h2>إدارة التعليقات</h2>
+                    <div class="filters">
+                        <select id="statusFilter" class="filter-select">
+                            <option value="">جميع الحالات</option>
+                            <option value="pending">في الانتظار</option>
+                            <option value="replied">تم الرد</option>
+                            <option value="flagged">مميز</option>
+                        </select>
+                        <input type="text" id="searchComments" placeholder="البحث في التعليقات..." class="search-input">
+                    </div>
+                </div>
+
+                <div id="commentsList" class="comments-list">
+                    <!-- Comments will be loaded here -->
+                </div>
+
+                <div class="pagination">
+                    <button id="prevPage" class="btn btn-secondary">السابق</button>
+                    <span id="pageInfo">صفحة 1 من 1</span>
+                    <button id="nextPage" class="btn btn-secondary">التالي</button>
+                </div>
+            </div>
+
+            <!-- Auto Replies Tab -->
+            <div id="auto-replies" class="tab-content">
+                <div class="auto-replies-header">
+                    <h2>الردود التلقائية</h2>
+                    <button id="addTemplateBtn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        إضافة قالب جديد
+                    </button>
+                </div>
+
+                <div id="templatesList" class="templates-list">
+                    <!-- Templates will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <div class="settings-header">
+                    <h2>الإعدادات</h2>
+                </div>
+
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="fbAppId">معرف تطبيق الفيسبوك:</label>
+                        <input type="text" id="fbAppId" placeholder="أدخل معرف التطبيق">
+                    </div>
+                    <div class="form-group">
+                        <label for="fbAppSecret">كلمة سر التطبيق:</label>
+                        <input type="password" id="fbAppSecret" placeholder="أدخل كلمة السر">
+                    </div>
+                    <div class="form-group">
+                        <label for="fbAccessToken">رمز الوصول:</label>
+                        <input type="password" id="fbAccessToken" placeholder="أدخل رمز الوصول">
+                    </div>
+                    <button id="saveSettingsBtn" class="btn btn-primary">حفظ الإعدادات</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <div id="commentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تفاصيل التعليق</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="commentDetails"></div>
+                <div class="reply-section">
+                    <h4>الرد على التعليق</h4>
+                    <textarea id="replyMessage" placeholder="اكتب ردك هنا..."></textarea>
+                    <div class="reply-actions">
+                        <button id="sendReplyBtn" class="btn btn-primary">إرسال الرد</button>
+                        <button id="useTemplateBtn" class="btn btn-secondary">استخدام قالب</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="templateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="templateModalTitle">إضافة قالب جديد</h3>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="templateForm">
+                    <div class="form-group">
+                        <label for="templateName">اسم القالب:</label>
+                        <input type="text" id="templateName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="templateContent">محتوى الرد:</label>
+                        <textarea id="templateContent" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="templateTriggers">الكلمات المفتاحية (افصل بينها بفاصلة):</label>
+                        <input type="text" id="templateTriggers" placeholder="مثال: شكراً، ممتاز، رائع">
+                    </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="templateActive" checked>
+                            تفعيل القالب
+                        </label>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">حفظ</button>
+                        <button type="button" class="btn btn-secondary" id="cancelTemplateBtn">إلغاء</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner hidden">
+        <div class="spinner"></div>
+        <p>جاري التحميل...</p>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="app.js"></script>
+</body>
+
+</html>
